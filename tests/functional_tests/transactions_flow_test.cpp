@@ -116,6 +116,7 @@ bool transactions_flow_test(std::string& working_folder,
   std::string path_target_wallet,
   std::string& daemon_addr_a,
   std::string& daemon_addr_b,
+  epee::net_utils::http::login daemon_login,
   uint64_t amount_to_transfer, size_t mix_in_factor, size_t transactions_count, size_t transactions_per_second)
 {
   LOG_PRINT_L0("-----------------------STARTING TRANSACTIONS FLOW TEST-----------------------");
@@ -138,7 +139,7 @@ bool transactions_flow_test(std::string& working_folder,
     return false;
   }
 
-  w1.init(daemon_addr_a);
+  w1.init(daemon_addr_a, daemon_login);
 
   uint64_t blocks_fetched = 0;
   bool received_money;

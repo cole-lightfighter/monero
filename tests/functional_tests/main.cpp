@@ -31,6 +31,7 @@
 #include <boost/program_options.hpp>
 
 #include "include_base_utils.h"
+#include "net/http_auth.h"
 using namespace epee;
 
 #include "common/command_line.h"
@@ -47,6 +48,8 @@ namespace
   const command_line::arg_descriptor<std::string> arg_dest_wallet     = {"dest-wallet",    "", "", true};
   const command_line::arg_descriptor<std::string> arg_daemon_addr_a   = {"daemon-addr-a",  "", "127.0.0.1:8080"};
   const command_line::arg_descriptor<std::string> arg_daemon_addr_b   = {"daemon-addr-b",  "", "127.0.0.1:8082"};
+  const command_line::arg_descriptor<std::string> arg_daemon_user   = {"daemon-user",  "", "user"};
+  const command_line::arg_descriptor<std::string> arg_daemon_pass   = {"daemon-pass",  "", "pass"};
 
   const command_line::arg_descriptor<uint64_t> arg_transfer_amount = {"transfer_amount",   "", 60000000000000};
   const command_line::arg_descriptor<size_t> arg_mix_in_factor     = {"mix-in-factor",     "", 10};
@@ -74,6 +77,8 @@ int main(int argc, char* argv[])
   command_line::add_arg(desc_options, arg_dest_wallet);
   command_line::add_arg(desc_options, arg_daemon_addr_a);
   command_line::add_arg(desc_options, arg_daemon_addr_b);
+  command_line::add_arg(desc_options, arg_daemon_user);
+  command_line::add_arg(desc_options, arg_daemon_pass);
 
   command_line::add_arg(desc_options, arg_transfer_amount);
   command_line::add_arg(desc_options, arg_mix_in_factor);
@@ -108,6 +113,13 @@ int main(int argc, char* argv[])
 
     std::string daemon_addr_a = command_line::get_arg(vm, arg_daemon_addr_a);
     std::string daemon_addr_b = command_line::get_arg(vm, arg_daemon_addr_b);
+
+    std::string daemon_user = command_line::get_arg(vm, arg_daemon_user);
+    std::string daemon_pass = command_line::get_arg(vm, arg_daemon_pass);
+    net_utils::http::login daemon_login;
+    daemon_login.username = daemon_user;
+    daemon_login.password = daemon_pass;
+
     uint64_t amount_to_transfer = command_line::get_arg(vm, arg_transfer_amount);
     size_t mix_in_factor = command_line::get_arg(vm, arg_mix_in_factor);
     size_t transactions_count = command_line::get_arg(vm, arg_tx_count);
@@ -115,7 +127,7 @@ int main(int argc, char* argv[])
     size_t repeat_count = command_line::get_arg(vm, arg_test_repeat_count);
 
     for(size_t i = 0; i != repeat_count; i++)
-      if(!transactions_flow_test(working_folder, path_source_wallet, path_target_wallet, daemon_addr_a, daemon_addr_b, amount_to_transfer, mix_in_factor, transactions_count, transactions_per_second))
+      if(!transactions_flow_test(working_folder, path_source_wallet, path_target_wallet, daemon_addr_a, daemon_addr_b, daemon_login, amount_to_transfer, mix_in_factor, transactions_count, transactions_per_second))
         break;
 
     std::string s;
